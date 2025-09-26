@@ -34,11 +34,24 @@ jobs:
       - name: Generate ABIs from contracts
         run: npm run genabi
 
+      - name: Derive basePath for GitHub Pages
+        id: base
+        shell: bash
+        run: |
+          OWNER_REPO="$GITHUB_REPOSITORY" # e.g. user/repo
+          REPO_NAME="${OWNER_REPO#*/}"
+          OWNER_NAME="${OWNER_REPO%%/*}"
+          # 如果仓库名是 <owner>.github.io 则 basePath 为空，否则为 /<repo>
+          if [[ "$REPO_NAME" == "${OWNER_NAME}.github.io" ]]; then
+            echo "base_path=" >> $GITHUB_OUTPUT
+          else
+            echo "base_path=/$REPO_NAME" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build frontend (Next.js export)
         working-directory: packages/frontend
         env:
-          # 如果是个人/组织主页仓库，保持空值；否则填写 "/<repo-name>"
-          NEXT_PUBLIC_BASE_PATH: ${{ vars.NEXT_PUBLIC_BASE_PATH }}
+          NEXT_PUBLIC_BASE_PATH: ${{ steps.base.outputs.base_path }}
         run: |
           npm run build
 
