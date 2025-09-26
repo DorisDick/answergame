@@ -1,0 +1,26 @@
+{
+  "name": "answer-game",
+  "private": true,
+  "version": "1.0.0",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "postinstall": "cd ./packages/frontend/ && npm run genabi",
+    "dev": "cd packages/frontend && npm run dev",
+    "build": "cd packages/frontend && npm run build",
+    "deploy:local": "cd packages/contracts && npx hardhat deploy --network localhost",
+    "node:local": "cd packages/contracts && npx hardhat node --verbose",
+    "genabi": "cd packages/frontend && npm run genabi",
+    "deploy:sepolia": "cd packages/contracts && npx hardhat deploy --network sepolia && cd ../frontend && npm run genabi"
+  },
+  "devDependencies": {
+    "hardhat": "^2.26.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
+  }
+}
