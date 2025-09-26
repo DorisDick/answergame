@@ -2,9 +2,6 @@
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 const nextConfig = {
-  experimental: {
-    appDir: true,
-  },
   // 为 GitHub Pages 静态托管启用导出
   output: "export",
   // GitHub Pages 子路径，如 /<repo>

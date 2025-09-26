@@ -28,28 +28,43 @@ export async function fhevmMockCreateInstance(
   }
 
   const mockInstance: FhevmInstance = {
-    getPublicKey: () => "mock-public-key",
-    getPublicParams: (size: number) => `mock-public-params-${size}`,
+    getPublicKey: () => ({ publicKeyId: "mock-public-key-id", publicKey: new Uint8Array([1,2,3]) }),
+    getPublicParams: (size: number) => ({ publicParams: new Uint8Array([4,5,6]), publicParamsId: `mock-public-params-${size}` }),
     createEncryptedInput: (contractAddress: string, userAddress: string) => ({
       add32: (value: number) => {
         console.log(`Mock: Adding encrypted value ${value}`);
+        return (mockInstance as any).createEncryptedInput(contractAddress, userAddress);
       },
       encrypt: async () => ({
-        // 返回符合 BytesLike 的 32 字节句柄与 64 字节证明
-        handles: [randomHex(32)],
-        inputProof: randomHex(64),
+        handles: [new Uint8Array(32)],
+        inputProof: new Uint8Array(64),
       }),
-    }),
+    } as any),
+    publicDecrypt: async (handles: (string | Uint8Array)[]) => {
+      const result: Record<string, bigint> = {};
+      handles.forEach((h, i) => {
+        const key = typeof h === "string" ? h : `u8-${i}`;
+        result[key] = BigInt(i + 1);
+      });
+      return result as any;
+    },
     userDecrypt: async (handles: any[], privateKey: string, publicKey: string, signature: string, contractAddresses: string[], userAddress: string, startTimestamp: number, durationDays: number) => {
       console.log("Mock: Decrypting handles", handles);
-      // Return mock decrypted values
       const result: Record<string, bigint> = {};
       handles.forEach((handle, index) => {
-        result[handle.handle] = BigInt(index + 1); // Mock decrypted value
+        const key = typeof handle === "string" ? handle : handle.handle;
+        result[key] = BigInt(index + 1);
       });
-      return result;
+      return result as any;
     },
-  };
+    createEIP712: (publicKey: string, contractAddresses: string[], startTimestamp: string | number, durationDays: string | number) => ({
+      domain: { chainId: 31337, name: "mock", verifyingContract: contractAddresses[0] ?? "0x0000000000000000000000000000000000000000", version: "1" },
+      message: {},
+      primaryType: "Mock",
+      types: {},
+    }),
+    generateKeypair: () => ({ publicKey: "0x01", privateKey: "0x02" }),
+  } as any;
 
   // 标记为 Mock，供前端分支逻辑识别
   (mockInstance as unknown as { __isMock: boolean }).__isMock = true;

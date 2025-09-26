@@ -127,12 +127,13 @@ export const useWallet = () => {
       setChainId(Number.parseInt(chainId, 16));
     };
 
-    provider.on("accountsChanged", handleAccountsChanged);
-    provider.on("chainChanged", handleChainChanged);
+    const anyProvider: any = provider as any;
+    anyProvider?.on?.("accountsChanged", handleAccountsChanged);
+    anyProvider?.on?.("chainChanged", handleChainChanged);
 
     return () => {
-      provider.removeListener("accountsChanged", handleAccountsChanged);
-      provider.removeListener("chainChanged", handleChainChanged);
+      anyProvider?.removeListener?.("accountsChanged", handleAccountsChanged);
+      anyProvider?.removeListener?.("chainChanged", handleChainChanged);
     };
   }, [provider, disconnect]);
 
